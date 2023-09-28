@@ -23,7 +23,7 @@ def main():
             result = compute_product(n)
             print(f"The product of numbers from 1 to {n} is {result}")
         else:
-            print("Invalid choice. Please choose 'sum' or 'product'.")
+            print("Invalid choice. Please choose 'sum' or 'product'. You do not need to include parentheses.")
 
     except ValueError:
         print("Invalid input. Please enter a valid number.")
