@@ -14,7 +14,15 @@ class Person:
     
     def add_address(self, address):
         self.addresses.append(address)
-    
+
+class Student(Person):
+    def __init__(self, name, age, addresses, college_course):
+        Person.__init__(self, name, age, addresses)
+        self.college_course = college_course
+    def __repr__(self):
+        return f'Student("{self.name}", {self.age}, {self.college_course})'
+
+
 class Address:
     def __init__(self, house_number, street, town, county, eircode, country="Ireland"):
         self.house_number = house_number
@@ -25,10 +33,12 @@ class Address:
         self.country = country
 
     def __repr__(self):
-        string = f'{self.house_number} {self.street},\n{self.town},\n{self.county},\n{self.eircode},\n{self.country}'
+        string = "\n"
+        string += f'{self.house_number} {self.street},\n{self.town},\n{self.county},\n{self.eircode},\n{self.country}'
         return string
         
 address1 = Address("94", "Frenchcourt", "Orandale", "Galway", "H91K7P1")
 address2 = Address("123", "Main Street", "Renmore", "Clare", "H85QPR7") #new address
 p1 = Person("John", 36, [address1, address2])
+p1 = Student("John", 36, address1, "Data")
 print(p1)
