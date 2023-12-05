@@ -78,14 +78,22 @@ class Shop:
     
     def __init__(self, path):
         self.stock = []
-        with open(path) as csv_file:
-            csv_reader = csv.reader(csv_file, delimiter=',')
-            first_row = next(csv_reader)
-            self.cash = float(first_row[0])
-            for row in csv_reader:
-                p = Product(row[0], float(row[1]))
-                ps = ProductStock(p, float(row[2]))
-                self.stock.append(ps)
+        try: # try to open the file
+            with open(path) as csv_file:
+                csv_reader = csv.reader(csv_file, delimiter=',')
+                first_row = next(csv_reader)
+                self.cash = float(first_row[0])
+                for row in csv_reader:
+                    if len(row) >= 3:
+                        p = Product(row[0], float(row[1]))
+                        ps = ProductStock(p, float(row[2]))
+                        self.stock.append(ps)
+                    else: # if the row is not valid
+                        print(f"issue with row: {row}")
+        except FileNotFoundError: # catch the specific exception
+            print("File {path} not found")
+        except Exception as e: # catch all other exceptions
+            print("Something went wrong")  
     
     def __repr__(self):
         str = ""
