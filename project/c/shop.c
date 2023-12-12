@@ -107,6 +107,29 @@ void readCustomerOrders(struct Customer *customers, struct Shop *shop)
         double budget = atof(b);
         struct Customer customer = {custName, budget, .index = 0};
 
+        // Check if the customer is a new or existing customer
+        int existingCustomerIndex = -1;
+        for (int i = 0; i < shop->index; i++)
+        {
+            if (strcmp(shop->stock[i].product.name, custName) == 0)
+            {
+                existingCustomerIndex = i;
+                break;
+            }
+        }
+
+        if (existingCustomerIndex != -1)
+        {
+            printf("Welcome back, %s!\n", custName);
+        }
+        else
+        {
+            printf("New customer, %s! We are excited to have you.\n", custName);
+            shop->stock[shop->index].product.name = custName;
+            shop->stock[shop->index].quantity = 0;
+            shop->stock[shop->index++].product.price = 0.0;
+        }
+
         // Processing product orders for each customer
         char *product;
         char *quantity;
