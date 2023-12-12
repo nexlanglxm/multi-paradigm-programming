@@ -29,13 +29,37 @@ def create_and_stock_shop():
         print(f"An unexpected error occurred: {e}")
     return shop
 
-def process_customer_orders(customer, shop):
-    total_cost = 0
-    for product in customer["products"]:
-        product_name = product["name"]
-        product_quantity = float(product["quantity"])  # Change int() to float()
-        found = False
+def process_customer_order_interactively(shop):
+    customer = {}
+    customer["name"] = input("Enter your name: ")
+    customer["cash"] = float(input("Enter your cash amount: "))
+    customer["products"] = []
 
+    existing_names = set()
+
+    # Check existing names in customer.csv
+    try:
+        with open("./project/customer.csv", mode='r') as csv_file:
+            csv_reader = csv.reader(csv_file)
+            for row in csv_reader:
+                existing_names.add(row[0])
+    except FileNotFoundError:
+        print("Customer file not found. Proceeding with a new customer.")
+
+    # Check if the name already exists
+    if customer["name"] in existing_names:
+        print(f"Welcome back, {customer['name']}!")
+    else:
+        print(f"New customer, {customer['name']}! We are excited to have you.")
+
+    while True:
+        product_name = input("Enter the product name (or 'quit' to finish): ")
+        if product_name.lower() == 'quit':
+            print("Thank you for shopping with us!")
+            break
+        product_quantity = float(input("Enter the quantity: "))
+
+        found = False
         for shop_product in shop["products"]:
             if shop_product["name"] == product_name:
                 found = True
@@ -44,23 +68,36 @@ def process_customer_orders(customer, shop):
                     break
                 else:
                     shop_product["quantity"] = str(float(shop_product["quantity"]) - product_quantity)  # Update to string
-                    total_cost += product_quantity * shop_product["price"]  # Add the cost of each product to the total cost
+                    customer["products"].append({"name": product_name, "quantity": product_quantity})
                     print(f"Order placed for {product_quantity} units of {product_name}.")
+                    # update stock.csv
+                    try:
+                        with open("./project/stock.csv", mode='w', newline='') as stock_file:
+                            stock_writer = csv.writer(stock_file)
+                            stock_writer.writerow(["Cash"])  # Writing the header
+                            stock_writer.writerow([shop["cash"]])  # Writing the shop's cash
+                            for product in shop["products"]:
+                                stock_writer.writerow([product["name"], product["price"], product["quantity"]])
+                    except Exception as e:
+                        print(f"An error occurred while writing to stock.csv: {e}")
                     break
-        
         if not found:
             print(f"Error: Product '{product_name}' not found in the shop's inventory.")
+    # Write customer data to customer.csv
+    try:
+        with open("./project/customer.csv", mode='a', newline='') as csv_file:
+            csv_writer = csv.writer(csv_file)
+            if customer["name"] not in existing_names:
+                csv_file.write("\n")  # Add a newline if it's a new customer
+            for product in customer["products"]:
+                csv_writer.writerow([customer["name"], customer["cash"], product["name"], product["quantity"]])
+    except Exception as e:
+        print(f"An error occurred while writing to customer.csv: {e}")
 
-    shop["cash"] += total_cost  # Increase the shop's cash by the total cost from the purchase
-    customer["cash"] -= total_cost  # Deduct the total cost from the customer's cash
+    return customer
 
-    print(f"Customer's total cost: {total_cost}")
-    print(f"Updated Shop's cash: {shop['cash']}")
-    print(f"Updated Customer's cash: {customer['cash']}")
-    print("Updated shop inventory: ")
-    for product in shop["products"]:
-        print(f'NAME: {product["name"]}, PRICE: {product["price"]}, QUANTITY: {product["quantity"]}')
-        
+
+
 def read_customer():
     customers = []
     try:
@@ -93,10 +130,12 @@ def read_customer():
 def print_product(product):
     print(f'NAME: {product["name"]}, PRICE: {product["price"]}, QUANTITY: {product["quantity"]}')
 
+
 def print_customer(customer):
     print(f'NAME: {customer["name"]}, CASH: {customer["cash"]}')
     for product in customer["products"]:
         print(f'NAME: {product["name"]}, QUANTITY: {product["quantity"]}')
+
 
 def print_shop(shop):
     print(f'INITIAL CASH: {shop["cash"]}')
@@ -105,8 +144,5 @@ def print_shop(shop):
         print(f'NAME: {product["name"]}, PRICE: {product["price"]}, QUANTITY: {product["quantity"]}')
 
 shop = create_and_stock_shop()
-print(shop)
-
-customers = read_customer()
-for customer in customers:
-    process_customer_orders(customer, shop)
+print_shop(shop)
+customer = process_customer_order_interactively(shop)
