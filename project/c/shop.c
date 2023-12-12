@@ -82,11 +82,9 @@ void createAndStockshop()
     fclose(fp);
     if (line)
         free(line);
-
-    return shop;
 }
 
-void readCustomerOrders(struct Customer *customers)
+void readCustomerOrders(struct Customer *customers, struct Shop *shop)
 {
     FILE *fp;
     char *line = NULL;
@@ -117,8 +115,29 @@ void readCustomerOrders(struct Customer *customers)
             char *prodName = malloc(sizeof(char) * 25);
             strcpy(prodName, product);
             int quant = atoi(quantity);
-            struct Product orderedProduct = {prodName, 0.0};         // Renamed to avoid conflict
-            struct ProductStock stockItem = {orderedProduct, quant}; // Renamed to avoid conflict
+
+            // Check if the shop has sufficient stock for the requested quantity
+            int productIndex;
+            for (productIndex = 0; productIndex < shop->index; productIndex++)
+            {
+                if (strcmp(shop->stock[productIndex].product.name, prodName) == 0)
+                {
+                    if (quant > shop->stock[productIndex].quantity)
+                    {
+                        printf("Error: Insufficient stock for %s. Please try again later.\n", prodName);
+                        break; // Exit the loop for this product
+                    }
+                }
+            }
+
+            if (productIndex == shop->index)
+            {
+                printf("Error: Product %s not found in the shop's inventory.\n", prodName);
+                continue; // Skip adding this product to the shopping list
+            }
+
+            struct Product orderedProduct = {prodName, 0.0};
+            struct ProductStock stockItem = {orderedProduct, quant};
             customer.shoppingList[customer.index++] = stockItem;
         }
 
@@ -158,8 +177,8 @@ int main(void)
     struct Shop shop = createAndStockshop();
     printShop(shop);
 
-    struct Customer customer[10];
-    readCustomerOrders(customer);
+    struct Customer customers[10];
+    readCustomerOrders(customers, &shop);
     // printf("The shop has %d of the product %s\n", fantaStock.quantity, fantaStock.product.name)
 
     return 0;
