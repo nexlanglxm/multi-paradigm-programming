@@ -2,13 +2,12 @@ import os
 import csv
 
 # Change the working directory
-os.chdir(os.path.dirname(os.path.abspath(__file__)))
-
+# os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 def create_and_stock_shop():
     shop = {}
     try:
-        with open("stock.csv") as csv_file:
+        with open("./project/stock.csv") as csv_file:
             csv_reader = csv.reader(csv_file, delimiter=',')
             first_row = next(csv_reader)
             shop["cash"] = float(first_row[0])
@@ -28,11 +27,30 @@ def create_and_stock_shop():
         print(f"An error occurred: {e}")
     return shop
 
+def process_customer_orders(customer, shop):
+    for product in customer["products"]:
+        product_name = product["name"]
+        product_quantity = int(product["quantity"])
+        found = False
+
+        for shop_product in shop["products"]:
+            if shop_product["name"] == product_name:
+                found = True
+                if int(shop_product["quantity"]) < product_quantity:
+                    print(f"Error: Insufficient stock for {product_name}. Please try again later.")
+                    break
+                else:
+                    shop_product["quantity"] = str(int(shop_product["quantity"]) - product_quantity)
+                    print(f"Order placed for {product_quantity} units of {product_name}.")
+                    break
+        
+        if not found:
+            print(f"Error: Product {product_name} not found in the shop's inventory.")
 
 def read_customer():
     customer = {}
     try:
-        with open("customer.csv") as csv_file:
+        with open("./project/customer.csv") as csv_file:
             csv_reader = csv.reader(csv_file, delimiter=',')
             first_row = next(csv_reader)
             customer["name"] = first_row[0]
@@ -74,3 +92,5 @@ print_shop(shop)
 
 customer = read_customer()
 print_customer(customer)
+
+process_customer_orders(customer, shop)
