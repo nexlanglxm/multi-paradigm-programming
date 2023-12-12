@@ -1,8 +1,4 @@
-John, 100.50
-Fanta Can, 10
-Bread, 2
-Fusilli, 3
-
-Alice, 151.00
-Fanta Can, 20
-Bread, 40
+John, 100.50, Fanta, 10, Bread, 2, Fusilli, 3
+Alice, 151.50, Fanta, 2, Bread, 40
+Simon, 300.00, Bread, 2, Tomato sauce, 1, Bin bags, 1
+Kat, 600.00, Fanta, 2, Bread, 1, Fusilli, 3, Tomato sauce, 1, Bin bags, 1
