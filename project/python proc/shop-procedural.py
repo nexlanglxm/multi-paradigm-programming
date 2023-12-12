@@ -23,8 +23,10 @@ def create_and_stock_shop():
                     print(f"Issue with row: {row}. Skipping...")
     except FileNotFoundError:
         print("File 'stock.csv' not found. Please check the file path.")
+    except ValueError as ve:
+        print(f"Error: Invalid data within stock.csv - {ve}")
     except Exception as e:
-        print(f"An error occurred: {e}")
+        print(f"An unexpected error occurred: {e}")
     return shop
 
 def process_customer_orders(customer, shop):
@@ -37,7 +39,7 @@ def process_customer_orders(customer, shop):
             if shop_product["name"] == product_name:
                 found = True
                 if int(shop_product["quantity"]) < product_quantity:
-                    print(f"Error: Insufficient stock for {product_name}. Please try again later.")
+                    print(f"Error: Insufficient stock for {product_name}. There are only {shop_product['quantity']} left. Adjust your expectations, or come back later.")
                     break
                 else:
                     shop_product["quantity"] = str(int(shop_product["quantity"]) - product_quantity)
@@ -63,29 +65,27 @@ def read_customer():
                     product["quantity"] = row[1]
                     customer["products"].append(product)
                 else:
-                    print(f"Issue with row: {row}. Skipping...")
+                    print(f"Issue with row: {row}.")
     except FileNotFoundError:
         print("File 'customer.csv' not found. Please check the file path.")
+    except ValueError as ve:
+        print(f"Error: Invalid data within cutomer.csv - {ve}")
     except Exception as e:
         print(f"An error occurred: {e}")
     return customer
 
-
 def print_product(product):
     print(f'NAME: {product["name"]}, PRICE: {product["price"]}, QUANTITY: {product["quantity"]}')
-
 
 def print_customer(customer):
     print(f'NAME: {customer["name"]}, CASH: {customer["cash"]}')
     for product in customer["products"]:
         print(f'NAME: {product["name"]}, QUANTITY: {product["quantity"]}')
 
-
 def print_shop(shop):
     print(f'INITIAL CASH: {shop["cash"]}')
     for product in shop["products"]:
         print_product(product)
-
 
 shop = create_and_stock_shop()
 print_shop(shop)
