@@ -34,17 +34,25 @@ class Customer:
 
     def __init__(self, path):
         self.shopping_list = []
-        with open(path) as csv_file:
-            csv_reader = csv.reader(csv_file, delimiter=',')
-            first_row = next(csv_reader)
-            self.name = first_row[0]
-            self.budget = float(first_row[1])
-            for row in csv_reader:
-                name = row[0]
-                quantity = float(row[1])
-                p = Product(name)
-                ps = ProductStock(p, quantity)
-                self.shopping_list.append(ps) 
+        try:
+            with open(path) as csv_file:
+                csv_reader = csv.reader(csv_file, delimiter=',')
+                first_row = next(csv_reader)
+                self.name = first_row[0]
+                self.budget = float(first_row[1])
+                for row in csv_reader:
+                    if len(row) >= 2:
+                        name = row[0]
+                        quantity = float(row[1])
+                        p = Product(name)
+                        ps = ProductStock(p, quantity)
+                        self.shopping_list.append(ps)
+                    else:
+                        print(f"Issue with row: {row}. Skipping...")
+        except FileNotFoundError:
+            print(f"File {path} not found.")
+        except Exception as e:
+            print("An error occurred: {e}")
                 
     def calculate_costs(self, price_list):
         for shop_item in price_list:
@@ -89,11 +97,11 @@ class Shop:
                         ps = ProductStock(p, float(row[2]))
                         self.stock.append(ps)
                     else: # if the row is not valid
-                        print(f"issue with row: {row}")
+                        print(f"issue with row: {row}.")
         except FileNotFoundError: # catch the specific exception
-            print("File {path} not found")
+            print(f"File {path} not found.")
         except Exception as e: # catch all other exceptions
-            print("Something went wrong")  
+            print("Something went wrong.")  
     
     def __repr__(self):
         str = ""
