@@ -16,8 +16,8 @@ def create_and_stock_shop():
                 if len(row) >= 3: #check if the row has at least 3 columns
                     product = {}
                     product["name"] = row[0]
-                    product["price"] = row[1]
-                    product["quantity"] = row[2]
+                    product["price"] = float(row[1])
+                    product["quantity"] = int(row[2])
                     shop["products"].append(product)
                 else:
                     print(f"Issue with row: {row}. Skipping...")
@@ -32,22 +32,23 @@ def create_and_stock_shop():
 def process_customer_orders(customer, shop):
     for product in customer["products"]:
         product_name = product["name"]
-        product_quantity = int(product["quantity"])
+        product_quantity = float(product["quantity"])  # Change int() to float()
         found = False
 
         for shop_product in shop["products"]:
             if shop_product["name"] == product_name:
                 found = True
-                if int(shop_product["quantity"]) < product_quantity:
+                if float(shop_product["quantity"]) < product_quantity:
                     print(f"Error: Insufficient stock for {product_name}. There are only {shop_product['quantity']} left. Adjust your expectations, or come back later.")
                     break
                 else:
-                    shop_product["quantity"] = str(int(shop_product["quantity"]) - product_quantity)
+                    shop_product["quantity"] = str(float(shop_product["quantity"]) - product_quantity)  # Update to string
                     print(f"Order placed for {product_quantity} units of {product_name}.")
                     break
         
         if not found:
             print(f"Error: Product {product_name} not found in the shop's inventory.")
+
 
 def read_customer():
     customer = {}
@@ -62,7 +63,7 @@ def read_customer():
                 if len(row) >= 2:
                     product = {}
                     product["name"] = row[0]
-                    product["quantity"] = row[1]
+                    product["quantity"] = row[1].strip()  # Remove leading/trailing whitespace
                     customer["products"].append(product)
                 else:
                     print(f"Issue with row: {row}.")
@@ -73,6 +74,7 @@ def read_customer():
     except Exception as e:
         print(f"An error occurred: {e}")
     return customer
+
 
 def print_product(product):
     print(f'NAME: {product["name"]}, PRICE: {product["price"]}, QUANTITY: {product["quantity"]}')
