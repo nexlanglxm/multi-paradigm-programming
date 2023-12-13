@@ -2,6 +2,9 @@
 #include <string.h>
 #include <stdlib.h>
 
+#define MAX_PRODUCTS 20
+#define MAX_CUSTOMERS 10
+
 struct Product
 {
     char name[50];
@@ -25,7 +28,7 @@ struct Customer
 {
     char name[50];
     double budget;
-    struct ProductStock shoppingList[10];
+    struct ProductStock shoppingList[MAX_PRODUCTS];
     int index;
 };
 
@@ -46,6 +49,11 @@ void printShop(struct Shop s)
     }
 }
 
+/**
+ * This function creates a shop and stocks it with products from a CSV file.
+ *
+ * @param shop Pointer to the Shop structure where the shop details will be stored.
+ */
 void createAndStockshop(struct Shop *shop)
 {
     shop->shopfloat = 200.0;
@@ -79,64 +87,108 @@ void createAndStockshop(struct Shop *shop)
         free(line);
 }
 
+/**
+ * This function processes customer orders by taking user input for the customer's name, budget,
+ * and product orders. It validates the product orders against the shop's inventory.
+ *
+ * @param customers Pointer to an array of Customer structures where the processed customer information will be stored.
+ * @param shop Pointer to the Shop structure containing shop inventory details.
+ */
 void processCustomerOrder(struct Customer *customers, struct Shop *shop)
 {
-    printf("Enter your name: ");
-    char custName[50];
-    scanf("%s", custName);
-
-    double budget;
-    printf("Enter your budget: ");
-    scanf("%lf", &budget);
-
-    printf("Welcome, %s!\n", custName);
-
-    struct Customer customer;
-    strcpy(customer.name, custName);
-    customer.budget = budget;
-
-    int customerIndex = 0;
-    customers[customerIndex++] = customer;
-
-    // Process product orders
-    printf("Enter your product orders (name quantity), type 'quit' to finish:\n");
-    char prodName[50];
-    int quantity;
-
-    while (1)
+    FILE *fp;
+    fp = fopen("../project/customer.csv", "r");
+    if (fp == NULL)
     {
-        scanf("%s", prodName);
-        if (strcmp(prodName, "quit") == 0)
-            break;
+        printf("Error opening file.\n");
+        exit(EXIT_FAILURE);
+    }
 
-        scanf("%d", &quantity);
+    char line[100]; // Adjust the size according to your CSV lines
+    int customerIndex = 0;
 
-        int productIndex;
-        for (productIndex = 0; productIndex < shop->index; productIndex++)
+    while (fgets(line, sizeof(line), fp) != NULL)
+    {
+        char custName[50];
+        double budget;
+        sscanf(line, "%49[^,],%lf", custName, &budget); // Read name and cash
+
+        printf("Welcome, %s! Your budget is %.2f\n", custName, budget);
+
+        // Populate customer struct with extracted data
+        struct Customer customer;
+        strcpy(customer.name, custName);
+        customer.budget = budget;
+
+        printf("Enter your name: ");
+        char custName[50];
+        scanf("%s", custName);
+
+        double budget;
+        printf("Enter your budget: ");
+        scanf("%lf", &budget);
+
+        printf("Welcome, %s!\n", custName);
+
+        // Initialize a new customer
+        struct Customer customer;
+        strcpy(customer.name, custName);
+        customer.budget = budget;
+        customer.index = 0;
+
+        int customerIndex = 0;
+        customers[customerIndex++] = customer;
+
+        // Process product orders
+        printf("Enter your product orders (name quantity), type 'quit' to finish:\n");
+        char prodName[50];
+        int quantity;
+
+        while (1)
         {
-            if (strcmp(shop->stock[productIndex].product.name, prodName) == 0)
+            scanf("%s", prodName);
+            if (strcmp(prodName, "quit") == 0)
+                break;
+
+            scanf("%d", &quantity);
+
+            // Check if the entered product exists in the shop's inventory
+            int productIndex;
+            for (productIndex = 0; productIndex < shop->index; productIndex++)
             {
-                if (quantity > shop->stock[productIndex].quantity)
+                if (strcmp(shop->stock[productIndex].product.name, prodName) == 0)
                 {
-                    printf("Error: Insufficient stock for %s. Please try again later.\n", prodName);
-                    break;
+                    if (quantity > shop->stock[productIndex].quantity)
+                    {
+                        printf("Error: Insufficient stock for %s. Please try again later.\n", prodName);
+                        break;
+                    }
                 }
             }
-        }
 
-        if (productIndex == shop->index)
-        {
-            printf("Error: Product %s not found in the shop's inventory.\n", prodName);
-            continue;
-        }
+            // If the product doesn't exist in the inventory, display an error
+            if (productIndex == shop->index)
+            {
+                printf("Error: Product %s not found in the shop's inventory.\n", prodName);
+                continue;
+            }
 
-        struct Product orderedProduct;
-        strcpy(orderedProduct.name, prodName);
-        orderedProduct.price = 0.0;
-        struct ProductStock stockItem = {orderedProduct, quantity};
-        customer.shoppingList[customer.index++] = stockItem;
+            // Add the ordered product to the customer's shopping list
+            struct Product orderedProduct;
+            strcpy(orderedProduct.name, prodName);
+            orderedProduct.price = 0.0;
+            struct ProductStock stockItem = {orderedProduct, quantity};
+            customers[customerIndex - 1].shoppingList[customers[customerIndex - 1].index++] = stockItem;
+        }
     }
 }
+
+/**
+ * This function prints the customer's shopping list and calculates the total cost of the order.
+ *
+ * @param customer Pointer to the Customer structure containing the customer's shopping list.
+ * @param shop Pointer to the Shop structure containing shop inventory details.
+ */
 
 int main(void)
 {
@@ -144,7 +196,7 @@ int main(void)
     createAndStockshop(&shop);
     printShop(shop);
 
-    struct Customer customers[10];
+    struct Customer customers[MAX_CUSTOMERS];
     processCustomerOrder(customers, &shop);
 
     return 0;
