@@ -1,114 +1,96 @@
 import os
 import csv
-# change the working directory
-# os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 class Product:
-# initialize the product with a name and a price
-    def __init__(self, name, price=0):
+    def __init__(self, name, price, quantity):
         self.name = name
         self.price = price
-# return the name & price of the product
-    def __repr__(self):
-        return f'Name: {self.name} Price: {self.price}'
-
-class ProductStock:
-    
-    def __init__(self, product, quantity):
-        self.product = product
         self.quantity = quantity
-# return the name of the product
-    def name(self):
-        return self.product.name;
-# return the unit price of the product
-    def unit_price(self):
-        return self.product.price;
-# calculate the cost of the product       
-    def cost(self):
-        return self.unit_price() * self.quantity
-        
+
     def __repr__(self):
-        return f"{self.product} Quantity: {self.quantity}"
+        return f"NAME: {self.name}, PRICE: {self.price}, QUANTITY: {self.quantity}"
 
-
-class Customer:
-    def __init__(self, path):
-        self.shopping_list = []
-        try:
-            with open(path) as csv_file:
-                csv_reader = csv.reader(csv_file, delimiter=',')
-                for row in csv_reader:
-                    if len(row) >= 3:
-                        self.name = row[0]
-                        self.budget = float(row[1])
-                        for i in range(2, len(row), 2):
-                            product_name = row[i]
-                            quantity = float(row[i + 1])
-                            p = Product(product_name)
-                            ps = ProductStock(p, quantity)
-                            self.shopping_list.append(ps)
-                    else:
-                        print(f"Issue with row: {row}. Skipping...")
-        except FileNotFoundError:
-            print(f"File {path} not found.")
-        except Exception as e:
-            print(f"An error occurred: {e}")
-
-                
-    def calculate_costs(self, price_list):
-        for shop_item in price_list:
-            for list_item in self.shopping_list:
-                if (list_item.name() == shop_item.name()):
-                    list_item.product.price = shop_item.unit_price()
-    
-    def order_cost(self):
-        cost = 0
-        
-        for list_item in self.shopping_list:
-            cost += list_item.cost()
-        
-        return cost
-    
-    def __repr__(self):
-        
-        str = f"{self.name} wants to buy"
-        for item in self.shopping_list:
-            cost = item.cost()
-            str += f"\n{item}"
-                
-        str += f"\nThe cost would be: {self.order_cost()}, he/she would have {self.budget - self.order_cost()} left"
-        return str 
-        
 class Shop:
-    def __init__(self, path):
-        self.stock = []
-        try: # try to open the file
-            with open(path) as csv_file:
+    def __init__(self, stock_file_path="./project/stock.csv", customer_file_path="./project/customer.csv"):
+        self.stock = self.read_stock(stock_file_path)
+        self.customer_file_path = customer_file_path
+
+    def read_stock(self, stock_file_path):
+        stock = {}
+        try:
+            with open(stock_file_path) as csv_file:
                 csv_reader = csv.reader(csv_file, delimiter=',')
-                first_row = next(csv_reader)
-                self.cash = float(first_row[0])  # 'cash' attribute represents shop's total cash
+                stock["cash"] = float(next(csv_reader)[0])
+                stock["products"] = []
                 for row in csv_reader:
-                    if len(row) >= 3:
-                        p = Product(row[0], float(row[1]))
-                        ps = ProductStock(p, float(row[2]))
-                        self.stock.append(ps)
-                    else:  # If the row is not valid
-                        print(f"Issue with row: {row}.")
-        except FileNotFoundError:  # Catch the specific exception
-            print(f"File {path} not found.")
-        except Exception as e:  # Catch all other exceptions
-            print("Something went wrong.")
+                    stock["products"].append({
+                        "name": row[0].strip(),
+                        "price": float(row[1]),
+                        "quantity": int(row[2])
+                    })
+        except FileNotFoundError:
+            print(f"File '{stock_file_path}' not found. Please check the file path.")
+        except ValueError as ve:
+            print(f"Error: Invalid data within stock.csv - {ve}")
+        except Exception as e:
+            print(f"An unexpected error occurred: {e}")
+        return stock
 
-    def __repr__(self):
-        str = ""
-        str += f'Shop has {self.cash} in cash\n'
-        for item in self.stock:
-            str += f"{item}\n"
-        return str
+    def process_customer_order_interactively(self):
+        existing_names = set()
+        try:
+            with open(self.customer_file_path, mode='r') as csv_file:
+                csv_reader = csv.reader(csv_file)
+                for row in csv_reader:
+                    existing_names.add(row[0])
+        except FileNotFoundError:
+            print("Customer file not found.")
 
-s = Shop("./project/stock.csv")
-print(s)
+        customer = {}
+        customer["name"] = input("Enter your name: ")
+        customer["cash"] = float(input("Enter your cash amount: "))
+        customer["products"] = []
 
-c = Customer("./project/customer.csv")
-c.calculate_costs(s.stock)
-print(c)
+        if customer["name"] in existing_names:
+            print(f"Welcome back, {customer['name']}!")
+        else:
+            print(f"New customer, {customer['name']}! We are excited to have you.")
+
+        while True:
+            product_name = input("Enter the product name (or 'quit' to finish): ")
+            if product_name.lower() == 'quit':
+                print("Thank you for shopping with us!")
+                break
+            
+            product_quantity = float(input("Enter the quantity: "))
+
+            found = False
+            for product in self.stock["products"]:
+                if product["name"] == product_name:
+                    found = True
+                    if product["quantity"] < product_quantity:
+                        print(f"Error: Insufficient stock for {product_name}. There are only {product['quantity']} left. Adjust your expectations, or come back later.")
+                        break
+                    else:
+                        product["quantity"] -= product_quantity
+                        customer["products"].append({"name": product_name, "quantity": product_quantity})
+                        print(f"Order placed for {product_quantity} units of {product_name}.")
+                        break
+            
+            if not found:
+                print(f"Error: Product '{product_name}' not found in the shop's inventory.")
+
+        # Write customer data to customer.csv
+        try:
+            with open(self.customer_file_path, mode='a', newline='') as csv_file:
+                csv_writer = csv.writer(csv_file)
+                if customer["name"] not in existing_names:
+                    csv_file.write("\n")  # Add a newline if it's a new customer
+                for product in customer["products"]:
+                    csv_writer.writerow([customer["name"], customer["cash"], product["name"], product["quantity"]])
+        except Exception as e:
+            print(f"An error occurred while writing to {self.customer_file_path}: {e}")
+
+# Usage:
+shop = Shop()
+shop.process_customer_order_interactively()
