@@ -10,7 +10,7 @@ class Product:
         self.price = price
 # return the name & price of the product
     def __repr__(self):
-        return f'NAME: {self.name} PRICE: {self.price}'
+        return f'Name: {self.name} Price: {self.price}'
 
 class ProductStock:
     
@@ -28,31 +28,32 @@ class ProductStock:
         return self.unit_price() * self.quantity
         
     def __repr__(self):
-        return f"{self.product} QUANTITY: {self.quantity}"
-# initialize the customer with a shopping list
-class Customer:
+        return f"{self.product} Quantity: {self.quantity}"
 
+
+class Customer:
     def __init__(self, path):
         self.shopping_list = []
         try:
             with open(path) as csv_file:
                 csv_reader = csv.reader(csv_file, delimiter=',')
-                first_row = next(csv_reader)
-                self.name = first_row[0]
-                self.budget = float(first_row[1])
                 for row in csv_reader:
-                    if len(row) >= 2:
-                        name = row[0]
-                        quantity = float(row[1])
-                        p = Product(name)
-                        ps = ProductStock(p, quantity)
-                        self.shopping_list.append(ps)
+                    if len(row) >= 3:
+                        self.name = row[0]
+                        self.budget = float(row[1])
+                        for i in range(2, len(row), 2):
+                            product_name = row[i]
+                            quantity = float(row[i + 1])
+                            p = Product(product_name)
+                            ps = ProductStock(p, quantity)
+                            self.shopping_list.append(ps)
                     else:
                         print(f"Issue with row: {row}. Skipping...")
         except FileNotFoundError:
             print(f"File {path} not found.")
         except Exception as e:
-            print("An error occurred: {e}")
+            print(f"An error occurred: {e}")
+
                 
     def calculate_costs(self, price_list):
         for shop_item in price_list:
@@ -74,35 +75,30 @@ class Customer:
         for item in self.shopping_list:
             cost = item.cost()
             str += f"\n{item}"
-            if (cost == 0):
-                str += f" {self.name} doesn't know how much that costs :("
-            else:
-                str += f" COST: {cost}"
                 
-        str += f"\nThe cost would be: {self.order_cost()}, he would have {self.budget - self.order_cost()} left"
+        str += f"\nThe cost would be: {self.order_cost()}, he/she would have {self.budget - self.order_cost()} left"
         return str 
         
 class Shop:
-    
     def __init__(self, path):
         self.stock = []
         try: # try to open the file
             with open(path) as csv_file:
                 csv_reader = csv.reader(csv_file, delimiter=',')
                 first_row = next(csv_reader)
-                self.cash = float(first_row[0])
+                self.cash = float(first_row[0])  # 'cash' attribute represents shop's total cash
                 for row in csv_reader:
                     if len(row) >= 3:
                         p = Product(row[0], float(row[1]))
                         ps = ProductStock(p, float(row[2]))
                         self.stock.append(ps)
-                    else: # if the row is not valid
-                        print(f"issue with row: {row}.")
-        except FileNotFoundError: # catch the specific exception
+                    else:  # If the row is not valid
+                        print(f"Issue with row: {row}.")
+        except FileNotFoundError:  # Catch the specific exception
             print(f"File {path} not found.")
-        except Exception as e: # catch all other exceptions
-            print("Something went wrong.")  
-    
+        except Exception as e:  # Catch all other exceptions
+            print("Something went wrong.")
+
     def __repr__(self):
         str = ""
         str += f'Shop has {self.cash} in cash\n'
@@ -110,9 +106,9 @@ class Shop:
             str += f"{item}\n"
         return str
 
-s = Shop("../project/stock.csv")
+s = Shop("./project/stock.csv")
 print(s)
 
-c = Customer("../project/customer.csv")
+c = Customer("./project/customer.csv")
 c.calculate_costs(s.stock)
 print(c)

@@ -32,6 +32,7 @@ struct Customer
     int index;
 };
 
+// function to print product details
 void printProduct(struct Product p)
 {
     printf("--------------------\n");
@@ -39,6 +40,7 @@ void printProduct(struct Product p)
     printf("--------------------\n");
 }
 
+// function to print shop details
 void printShop(struct Shop s)
 {
     printf("Shop has %.2f in cash\n", s.shopfloat);
