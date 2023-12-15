@@ -59,8 +59,20 @@ class Shop:
         while True:
             product_name = input("Enter the product name (or 'quit' to finish): ")
             if product_name.lower() == 'quit':
-                print("Thank you for shopping with us!")
-                break
+                total_cost = sum(product.price * product.quantity for product in customer["products"])
+                print("Order Summary:")
+                for product in customer["products"]:
+                    print(f"Product: {product.name}, Quantity: {product.quantity}")
+                print(f"Total Cost: {total_cost}")
+                confirmation = input("Is this order summary correct? (yes/no): ")
+                if confirmation.lower() == 'yes':
+                    print("Thank you for shopping with us!")
+                    break
+                elif confirmation.lower() == 'no':
+                    print("Order canceled.")
+                    break
+                else:
+                    print("Invalid input. Please enter 'yes' or 'no'.")
             
             product_quantity = float(input("Enter the quantity: "))
 
