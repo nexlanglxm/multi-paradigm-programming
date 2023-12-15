@@ -89,6 +89,21 @@ void createAndStockshop(struct Shop *shop)
         free(line);
 }
 
+void welcomeReturningCustomer(const char *name, double budget) {
+    printf("Welcome back, %s! Your budget is %.2f\n", name, budget);
+}
+
+void initializeNewCustomer(struct Customer *customer) {
+    printf("Enter your name: ");
+    scanf("%s", customer->name);
+
+    printf("Enter your budget: ");
+    scanf("%lf", &customer->budget);
+
+    printf("Welcome, %s!\n", customer->name);
+    customer->index = 0;
+}
+
 /**
  * This function processes customer orders by taking user input for the customer's name, budget,
  * and product orders. It validates the product orders against the shop's inventory.
@@ -114,21 +129,25 @@ void processCustomerOrder(struct Customer *customers, struct Shop *shop)
         double budget;
         sscanf(line, "%49[^,],%lf", custName, &budget); // Read name and cash
 
-        printf("Welcome, %s! Your budget is %.2f\n", custName, budget);
+        int existingCustomer = 0;
+        for (int i = 0; i < MAX_CUSTOMERS; i++)
+        {
+            if (strcmp(customers[i].name, custName) == 0)
+            {
+                existingCustomer = 1;
+                welcomeReturningCustomer(custName, budget);
+                break;
+            }
+        }
 
-        printf("Enter your name: ");
-        scanf("%s", custName);
-
-        printf("Enter your budget: ");
-        scanf("%lf", &budget);
-
-        printf("Welcome, %s!\n", custName);
-
-        // Initialize a new customer
-        strcpy(customers->name, custName);
-        customers->budget = budget;
-        customers->index = 0;
-
+        if (!existingCustomer)
+        {
+            initializeNewCustomer(&customers[0]);
+        }
+        {
+            /* code */
+        }
+        
         // Process product orders
         printf("Enter your product orders (name quantity), type 'quit' to finish:\n");
         char prodName[50];
