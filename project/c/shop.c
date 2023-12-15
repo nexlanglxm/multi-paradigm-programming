@@ -169,37 +169,33 @@ void processCustomerOrder(struct Customer *customers, struct Shop *shop)
             customers->shoppingList[customers->index].quantity = quantity;
             customers->index++;
         }
-        fclose(fp);
-        fclose(fp);
-        FILE *stockFile = fopen("../project/stock.csv", "w");
-        if (stockFile == NULL)
-        {
-            printf("Error opening stock file.\n");
-            exit(EXIT_FAILURE);
-        }
-
-        // Write shop's cash to the stock.csv file
-        fprintf(stockFile, "%.2f\n", shop->shopfloat);
-
-        // Write updated stock quantities to the stock.csv file
-        for (int i = 0; i < shop->index; i++)
-        {
-            fprintf(stockFile, "%s,%.2f,%d\n",
-                    shop->stock[i].product.name,
-                    shop->stock[i].product.price,
-                    shop->stock[i].quantity);
-        }
-
-        fclose(stockFile);
     }
-}
 
-/**
- * This function prints the customer's shopping list and calculates the total cost of the order.
- *
- * @param customer Pointer to the Customer structure containing the customer's shopping list.
- * @param shop Pointer to the Shop structure containing shop inventory details.
- */
+    // Close the customer.csv file after processing all customers
+    fclose(fp);
+
+    // Update stock.csv after processing all customers
+    FILE *stockFile = fopen("../project/stock.csv", "w");
+    if (stockFile == NULL)
+    {
+        printf("Error opening stock file.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    // Write shop's cash to the stock.csv file
+    fprintf(stockFile, "%.2f\n", shop->shopfloat);
+
+    // Write updated stock quantities to the stock.csv file
+    for (int i = 0; i < shop->index; i++)
+    {
+        fprintf(stockFile, "%s,%.2f,%d\n",
+                shop->stock[i].product.name,
+                shop->stock[i].product.price,
+                shop->stock[i].quantity);
+    }
+
+    fclose(stockFile);
+}
 
 int main(void)
 {
