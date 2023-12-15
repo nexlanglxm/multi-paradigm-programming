@@ -222,8 +222,16 @@ int main(void)
     createAndStockshop(&shop);
     printShop(shop);
 
-    struct Customer customers[];
+    // Dynamic allocation for customers
+    struct Customer *customers = malloc(sizeof(struct Customer) * MAX_CUSTOMERS);
+    if (customers == NULL) {
+        printf("Memory allocation failed for customers.\n");
+        return EXIT_FAILURE;
+    }
+
     processCustomerOrder(customers, &shop);
 
+    // Free dynamically allocated memory
+    free(customers);
     return 0;
 }
