@@ -2,8 +2,8 @@
 #include <string.h>
 #include <stdlib.h>
 
-#define MAX_PRODUCTS 20
-#define MAX_CUSTOMERS 10
+#define MAX_PRODUCTS 50
+#define MAX_CUSTOMERS 25
 
 struct Product
 {
@@ -89,11 +89,13 @@ void createAndStockshop(struct Shop *shop)
         free(line);
 }
 
-void welcomeReturningCustomer(const char *name, double budget) {
+void welcomeReturningCustomer(const char *name, double budget)
+{
     printf("Welcome back, %s! Your budget is %.2f\n", name, budget);
 }
 
-void initializeNewCustomer(struct Customer *customer) {
+void initializeNewCustomer(struct Customer *customer)
+{
     printf("Enter your name: ");
     scanf("%s", customer->name);
 
@@ -145,9 +147,9 @@ void processCustomerOrder(struct Customer *customers, struct Shop *shop)
             initializeNewCustomer(&customers[0]);
         }
         {
-            /* code */
+            shop->stock = (struct ProductStock *)realloc(shop->stock, sizeof(struct ProductStock) * (shop->index + 1));
         }
-        
+
         // Process product orders
         printf("Enter your product orders (name quantity), type 'quit' to finish:\n");
         char prodName[50];
@@ -212,8 +214,6 @@ void processCustomerOrder(struct Customer *customers, struct Shop *shop)
                 shop->stock[i].product.price,
                 shop->stock[i].quantity);
     }
-
-    fclose(stockFile);
 }
 
 int main(void)
@@ -222,7 +222,7 @@ int main(void)
     createAndStockshop(&shop);
     printShop(shop);
 
-    struct Customer customers[MAX_CUSTOMERS];
+    struct Customer customers[];
     processCustomerOrder(customers, &shop);
 
     return 0;
