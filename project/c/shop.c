@@ -107,7 +107,6 @@ void processCustomerOrder(struct Customer *customers, struct Shop *shop)
     }
 
     char line[100]; // Adjust the size according to your CSV lines
-    int customerIndex = 0;
 
     while (fgets(line, sizeof(line), fp) != NULL)
     {
@@ -117,29 +116,18 @@ void processCustomerOrder(struct Customer *customers, struct Shop *shop)
 
         printf("Welcome, %s! Your budget is %.2f\n", custName, budget);
 
-        // Populate customer struct with extracted data
-        struct Customer customer;
-        strcpy(customer.name, custName);
-        customer.budget = budget;
-
         printf("Enter your name: ");
-        char custName[50];
         scanf("%s", custName);
 
-        double budget;
         printf("Enter your budget: ");
         scanf("%lf", &budget);
 
         printf("Welcome, %s!\n", custName);
 
         // Initialize a new customer
-        struct Customer customer;
-        strcpy(customer.name, custName);
-        customer.budget = budget;
-        customer.index = 0;
-
-        int customerIndex = 0;
-        customers[customerIndex++] = customer;
+        strcpy(customers->name, custName);
+        customers->budget = budget;
+        customers->index = 0;
 
         // Process product orders
         printf("Enter your product orders (name quantity), type 'quit' to finish:\n");
@@ -176,12 +164,33 @@ void processCustomerOrder(struct Customer *customers, struct Shop *shop)
             }
 
             // Add the ordered product to the customer's shopping list
-            struct Product orderedProduct;
-            strcpy(orderedProduct.name, prodName);
-            orderedProduct.price = 0.0;
-            struct ProductStock stockItem = {orderedProduct, quantity};
-            customers[customerIndex - 1].shoppingList[customers[customerIndex - 1].index++] = stockItem;
+            strcpy(customers->shoppingList[customers->index].product.name, prodName);
+            customers->shoppingList[customers->index].product.price = 0.0;
+            customers->shoppingList[customers->index].quantity = quantity;
+            customers->index++;
         }
+        fclose(fp);
+        fclose(fp);
+        FILE *stockFile = fopen("../project/stock.csv", "w");
+        if (stockFile == NULL)
+        {
+            printf("Error opening stock file.\n");
+            exit(EXIT_FAILURE);
+        }
+
+        // Write shop's cash to the stock.csv file
+        fprintf(stockFile, "%.2f\n", shop->shopfloat);
+
+        // Write updated stock quantities to the stock.csv file
+        for (int i = 0; i < shop->index; i++)
+        {
+            fprintf(stockFile, "%s,%.2f,%d\n",
+                    shop->stock[i].product.name,
+                    shop->stock[i].product.price,
+                    shop->stock[i].quantity);
+        }
+
+        fclose(stockFile);
     }
 }
 
