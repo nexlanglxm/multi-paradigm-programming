@@ -11,11 +11,33 @@ class Product:
         return f"NAME: {self.name}, PRICE: {self.price}, QUANTITY: {self.quantity}"
 
 class Shop:
+    """
+    A class representing a shop.
+
+    Attributes:
+    - stock_file_path (str): The file path of the stock CSV file.
+    - customer_file_path (str): The file path of the customer CSV file.
+    - stock (dict): A dictionary containing the shop's stock information.
+
+    Methods:
+    - __init__(self, stock_file_path="./project/stock.csv", customer_file_path="./project/customer.csv"): Initializes a Shop object.
+    - read_stock(self, stock_file_path): Reads the stock information from the stock CSV file.
+    - process_customer_order_interactively(self): Processes the customer's order interactively.
+    """
     def __init__(self, stock_file_path="./project/stock.csv", customer_file_path="./project/customer.csv"):
         self.stock = self.read_stock(stock_file_path)
         self.customer_file_path = customer_file_path
 
     def read_stock(self, stock_file_path):
+        """
+        Reads the stock information from the stock CSV file.
+
+        Parameters:
+        - stock_file_path (str): The file path of the stock CSV file.
+
+        Returns:
+        - stock (dict): A dictionary containing the shop's stock information.
+        """
         stock = {}
         try:
             with open(stock_file_path) as csv_file:
@@ -35,8 +57,11 @@ class Shop:
         except Exception as e:
             print(f"An unexpected error occurred: {e}")
         return stock
-
+    
     def process_customer_order_interactively(self):
+        """
+        Processes the customer's order interactively.
+        """
         existing_names = set()
         try:
             with open(self.customer_file_path, mode='r') as csv_file:
@@ -45,7 +70,7 @@ class Shop:
                     existing_names.add(row[0])
         except FileNotFoundError:
             print("Customer file not found.")
-
+        # Start the customer order process
         customer = {}
         customer["name"] = input("Enter your name: ")
         customer["cash"] = float(input("Enter your cash amount: "))
@@ -55,7 +80,8 @@ class Shop:
             print(f"Welcome back, {customer['name']}!")
         else:
             print(f"New customer, {customer['name']}! We are excited to have you.")
-
+        
+        # Start the order process
         while True:
             product_name = input("Enter the product name (or 'quit' to finish): ")
             if product_name.lower() == 'quit':
@@ -76,7 +102,7 @@ class Shop:
             
             product_quantity = float(input("Enter the quantity: "))
 
-            found = False
+            found = False # Flag to check if the product was found in the shop's inventory
             for product in self.stock["products"]:
                 if product["name"] == product_name:
                     found = True

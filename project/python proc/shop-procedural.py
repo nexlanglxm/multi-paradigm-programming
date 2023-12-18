@@ -5,6 +5,22 @@ import csv
 # os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 def create_and_stock_shop():
+    """
+    Creates a shop dictionary and populates it with data from a stock.csv file.
+    
+    Returns:
+    - shop (dict): A dictionary representing the shop, containing the following keys:
+        - cash (float): The amount of cash available in the shop.
+        - products (list): A list of dictionaries representing the products in the shop, with each dictionary containing the following keys:
+            - name (str): The name of the product.
+            - price (float): The price of the product.
+            - quantity (int): The quantity of the product in stock.
+    
+    Raises:
+    - FileNotFoundError: If the stock.csv file is not found.
+    - ValueError: If there is invalid data within the stock.csv file.
+    - Exception: If an unexpected error occurs.
+    """
     shop = {}
     try:
         with open("./project/stock.csv") as csv_file:
@@ -30,6 +46,21 @@ def create_and_stock_shop():
     return shop
 
 def process_customer_order_interactively(shop):
+    """
+    Process a customer order interactively.
+
+    This function prompts the user to enter their name, cash amount, and the products they want to purchase.
+    It checks if the customer is a new or existing customer and displays a welcome message accordingly.
+    The function continues to prompt the user for product names and quantities until the user enters 'quit'.
+    It validates the product name and quantity, checks if there is sufficient stock, and updates the shop's inventory.
+    Finally, it writes the customer's order details to a customer.csv file.
+
+    Parameters:
+    - shop (dict): The shop's information including products and cash amount.
+
+    Returns:
+    - customer (dict): The customer's information including name, cash amount, and products purchased.
+    """
     customer = {}
     customer["name"] = input("Enter your name: ")
     customer["cash"] = float(input("Enter your cash amount: "))
@@ -69,7 +100,7 @@ def process_customer_order_interactively(shop):
                 break
             else:
                 print("Invalid input. Please enter 'yes' or 'no'.")
-                
+
         product_quantity = float(input("Enter the quantity: "))
 
         found = False
@@ -109,9 +140,7 @@ def process_customer_order_interactively(shop):
 
     return customer
 
-
-
-def read_customer():
+#def read_customer():
     customers = []
     try:
         with open("./project/customer.csv") as csv_file:
