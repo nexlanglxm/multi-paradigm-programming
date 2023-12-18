@@ -1,3 +1,19 @@
+/**
+ * @file shop.c
+ * @brief This file contains the implementation of a shop management system.
+ *
+ * The shop management system allows users to create a shop, stock it with products from a CSV file,
+ * process customer orders, and update the shop's inventory and customer details.
+ *
+ * The main functions in this file include:
+ * - printProduct: Prints the details of a product.
+ * - printShop: Prints the details of a shop, including its cash and inventory.
+ * - createAndStockshop: Creates a shop and stocks it with products from a CSV file.
+ * - welcomeReturningCustomer: Displays a welcome message for a returning customer.
+ * - initializeNewCustomer: Initializes a new customer by taking user input for name and budget.
+ * - processCustomerOrder: Processes customer orders by taking user input for product orders and validating them against the shop's inventory.
+ * - main: The entry point of the program.
+ */
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -146,8 +162,20 @@ void processCustomerOrder(struct Customer *customers, struct Shop *shop)
         {
             initializeNewCustomer(&customers[0]);
         }
+        else
         {
-            shop->stock = (struct ProductStock *)realloc(shop->stock, sizeof(struct ProductStock) * (shop->index + 1));
+            struct ProductStock *tempStock = realloc(shop->stock, sizeof(struct ProductStock) * (shop->index + 1));
+            if (tempStock == NULL)
+            {
+                printf("Memory allocation failed for shop stock. \n");
+                exit(EXIT_FAILURE);
+            }
+            else
+            {
+                shop->stock = tempStock;
+                shop->stock[shop->index] = stockItem;
+                shop->index++;
+            }
         }
 
         // Process product orders
@@ -218,9 +246,18 @@ void processCustomerOrder(struct Customer *customers, struct Shop *shop)
 
 int main(void)
 {
-    struct Shop shop;
+    shop.index = 0;
+
+    shop.stock = malloc(sizeof(struct ProductStock) * MAX_PRODUCTS);
+    if (shop.stock == NULL)
+    {
+        printf("Memory allocation failed for shop stock.\n")
+        return EXIT_FAILURE;
+    }
+
     createAndStockshop(&shop);
     printShop(shop);
+
 
     // Dynamic allocation for customers
     struct Customer *customers = malloc(sizeof(struct Customer) * MAX_CUSTOMERS);
@@ -233,5 +270,6 @@ int main(void)
 
     // Free dynamically allocated memory
     free(customers);
+    free(shop.stock);
     return 0;
 }
